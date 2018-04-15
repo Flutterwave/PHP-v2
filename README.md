@@ -78,7 +78,7 @@ RAVE_LIVE_SECRET_KEY='FLWSECK-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-X'
 <br/>
 
 > **Version Control and `.env` file**<br/>
-It is adviced that you remove the `.env` file from version control since it may contain some sensitive information like _API keys_ should not be visible to others. If you are using Git, remember to add the `.env` entry to the `.gitignore` file of your project.
+It is adviced that you remove the `.env` file from version control since it usually contains some sensitive information like _API keys_ which should not be visible to the outside world. If you are using Git for version control, remember to add the `.env` entry to the `.gitignore` file of your project.
 
 
 <br/>
