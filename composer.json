@@ -12,10 +12,16 @@
         "vlucas/phpdotenv": "^2.4"
     },
     "license": "MIT",
-    "authors": [{
-        "name": "Glad Chinda",
-        "email": "gladxeqs@gmail.com"
-    }],
+    "authors": [
+        {
+            "name": "Glad Chinda",
+            "email": "gladxeqs@gmail.com"
+        },
+        {
+            "name": "Olanipekun Femi",
+            "email": "iolufemi@ymail.com"
+        }
+    ],
     "support": {
         "email": "gladxeqs@gmail.com",
         "issues": "https://github.com/gladchinda/rave-php/issues"
