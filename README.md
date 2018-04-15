@@ -2,6 +2,20 @@
 
 This package provides a very simple interface for integrating the Rave Payment Gateway to your PHP application. It is an extension of the [Flutterwave-Rave-PHP-SDK](https://github.com/Flutterwave/Flutterwave-Rave-PHP-SDK) package originally developed by [Femi Olanipekun](https://github.com/iolufemi).
 
+<br/>
+
+1. [Getting Started](#getting-started)
+   - [Installation](#installation)
+   - [Configuration](#configuration)
+   - [Setting Up for Payment](#setting-up-for-payment)
+2. [Advanced Usage](#advanced-usage)
+   - [Custom Payment Fields](#custom-payment-fields)
+   - [Payment Metadata](#payment-metadata)
+   - [Event Handlers](#event-handlers)
+3. [License](#license)
+
+<br/>
+
 ## Getting Started
 
 ### Installation
@@ -45,7 +59,6 @@ After the installation, you can set config variables for your PHP app. This pack
 | `RAVE_STAGING_SECRET_KEY` | Your `staging` environment secret key. | Required for `staging` |
 | `RAVE_LIVE_PUBLIC_KEY` | Your `live` environment public key. | Required for `live` |
 | `RAVE_LIVE_SECRET_KEY` | Your `live` environment secret key. | Required for `live` |
-||
 
 Create a new `.env` file in your project root directory (or edit the file if it already exists) with the following content. Ensure to replace them with your own config values.
 
@@ -62,8 +75,9 @@ RAVE_LIVE_SECRET_KEY='FLWSECK-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-X'
 
 # RAVE CONFIG VARIABLES (END)
 ```
+<br/>
 
-> **Version Control and `.env` file**
+> **Version Control and `.env` file**<br/>
 It is adviced that you remove the `.env` file from version control since it may contain some sensitive information like _API keys_ should not be visible to others. If you are using Git, remember to add the `.env` entry to the `.gitignore` file of your project.
 
 
@@ -90,7 +104,6 @@ To make payment, you will need to setup a **payment form** and a PHP **payment s
 | `phonenumber` | The customer's phone number |
 | `pay_button_text` | The text you want displayed on the payment button |
 | `ref` | The transaction reference. **Must be unique per transaction**. By default, a unique transaction reference is generated automatically for each transaction. You can override this behaviour when initializing `Rave`. |
-||
 
 <br/>
 
@@ -196,7 +209,7 @@ Your payment form should include the metadata fields:
 An instance of the `Rave\Event\BaseEventHandler` is used as the default event handler for the `Rave` instance. This event handler simply echoes text to the output for each event. You may define your own custom event handler to use instead of the default one.
 Here are a few guidelines for implementing your own event handler.
 
-1. **Must implement `Rave\Event\EventHandlerInterface`**
+1. **Must implement `Rave\Event\EventHandlerInterface`**<br/>
  Your event handler must implement the following methods of the `Rave\Event\EventHandlerInterface`:
 
  | Method | Description |
@@ -208,9 +221,10 @@ Here are a few guidelines for implementing your own event handler.
  | `onRequeryError($requeryResponse)` | This is called when a transaction requery returns with an error. |
  | `onCancel($transactionReference)` | This is called when a transaction is cancelled by the user. |
  | `onTimeout($transactionReference, $data)` | This is called when a transaction doesn't return with a success or a failure response. This can be a timedout transaction on the Rave server or an abandoned transaction by the customer. |
- ||
+ 
+ <br/>
 
-2. **Attach an instance of the event handler to the `Rave` instance using the `listener()` method**
+2. **Attach an instance of the event handler to the `Rave` instance using the `listener()` method**<br/>
  Create a new instance of your custom event handler and attach it to the `Rave` instance using the `listener()` method of the `Rave` instance.
 
  ```php
