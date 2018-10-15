@@ -7,11 +7,6 @@ namespace Flutterwave;
 
 // require __DIR__.'/../vendor/autoload.php'; // Uncomment this autoloader if you need it
 
-use Monolog\Logger;
-use Monolog\Handler\RotatingFileHandler;
-use Unirest\Request;
-use Unirest\Request\Body;
-
 /**
  * Flutterwave's Rave payment gateway PHP SDK
  * @author Olufemi Olanipekun <iolufemi@ymail.com>
@@ -29,7 +24,6 @@ class Rave {
      protected $meta = array();
      protected $env;
      protected $transactionPrefix;
-    // public $logger;
      protected $handler;
      protected $stagingUrl = 'https://ravesandboxapi.flutterwave.com';
      protected $liveUrl = 'https://api.ravepay.co';
@@ -83,10 +77,6 @@ class Rave {
         $this->env = $env;
         $this->transactionPrefix = $overrideRefWithPrefix ? $prefix : $prefix.'_';
         $this->overrideTransactionReference = $overrideRefWithPrefix;
-        // create a log channel
-        $log = new Logger('flutterwave/rave');
-        $this->logger = $log;
-        $log->pushHandler(new RotatingFileHandler('rave.log', 90, Logger::DEBUG));
         $this->createReferenceNumber();
         
         if($this->env === 'staging'){
@@ -97,8 +87,6 @@ class Rave {
             $this->baseUrl = $this->stagingUrl;
         }
         
-        $this->logger->notice('Rave Class Initializes....');
-        
         return $this;
     }
     
@@ -107,7 +95,6 @@ class Rave {
      * @return object
      * */
     function createCheckSum(){
-        $this->logger->notice('Generating Checksum....');
         $options = array( 
             "PBFPubKey" => $this->publicKey, 
             "amount" => $this->amount, 
@@ -149,13 +136,11 @@ class Rave {
      * @return object
      * */
     function createReferenceNumber(){
-        $this->logger->notice('Generating Reference Number....');
         if($this->overrideTransactionReference){
             $this->txref = $this->transactionPrefix;
         }else{
             $this->txref = uniqid($this->transactionPrefix);
         }
-        $this->logger->notice('Generated Reference Number....'.$this->txref);
         return $this;
     }
     
@@ -506,7 +491,6 @@ class Rave {
     function requeryTransaction($referenceNumber){
         $this->txref = $referenceNumber;
         $this->requeryCount++;
-        $this->logger->notice('Requerying Transaction....'.$this->txref);
         if(isset($this->handler)){
             $this->handler->onRequery($this->txref);
         }
@@ -529,20 +513,17 @@ class Rave {
         //check the status is success
         if ($response->body && $response->body->status === "success") {
             if($response->body && $response->body->data && $response->body->data->status === "successful"){
-                $this->logger->notice('Requeryed a successful transaction....'.json_encode($response->body->data));
                 // Handle successful
                 if(isset($this->handler)){
                     $this->handler->onSuccessful($response->body->data);
                 }
             }elseif($response->body && $response->body->data && $response->body->data->status === "failed"){
                 // Handle Failure
-                $this->logger->warn('Requeryed a failed transaction....'.json_encode($response->body->data));
                 if(isset($this->handler)){
                     $this->handler->onFailure($response->body->data);
                 }
             }else{
                 // Handled an undecisive transaction. Probably timed out.
-                $this->logger->warn('Requeryed an undecisive transaction....'.json_encode($response->body->data));
                 // I will requery again here. Just incase we have some devs that cannot setup a queue for requery. I don't like this.
                 if($this->requeryCount > 4){
                     // Now you have to setup a queue by force. We couldn't get a status in 5 requeries.
@@ -550,14 +531,11 @@ class Rave {
                         $this->handler->onTimeout($this->txref, $response->body);
                     }
                 }else{
-                    $this->logger->notice('delaying next requery for 3 seconds');
                     sleep(3);
-                    $this->logger->notice('Now retrying requery...');
                     $this->requeryTransaction($this->txref);
                 }
             }
         }else{
-            $this->logger->warn('Requery call returned error for transaction reference.....'.json_encode($response->body).'Transaction Reference: '. $this->txref);
             // Handle Requery Error
             if(isset($this->handler)){
                 $this->handler->onRequeryError($response->body);
@@ -795,7 +773,6 @@ class Rave {
      * */
     function paymentCanceled($referenceNumber){
         $this->txref = $referenceNumber;
-        $this->logger->notice('Payment was canceled by user..'.$this->txref);
         if(isset($this->handler)){
             $this->handler->onCancel($this->txref);
         }
