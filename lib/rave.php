@@ -19,34 +19,54 @@ use Unirest\Request\Body;
  **/
 
 class Rave {
-    protected $publicKey;
-    protected $secretKey;
-    protected $amount;
-    protected $paymentMethod = 'both';
-    protected $customDescription;
-    protected $customLogo;
-    protected $customTitle;
-    protected $country;
-    protected $currency;
-    protected $customerEmail;
-    protected $customerFirstname;
-    protected $customerLastname;
-    protected $customerPhone;
-    protected $txref;
-    protected $integrityHash;
-    protected $payButtonText = 'Make Payment';
-    protected $redirectUrl;
-    protected $meta = array();
-    protected $env = 'staging';
-    protected $transactionPrefix;
-    public $logger;
-    protected $handler;
-    protected $stagingUrl = 'https://ravesandboxapi.flutterwave.com';
-    protected $liveUrl = 'https://api.ravepay.co';
-    protected $baseUrl;
-    protected $transactionData;
-    protected $overrideTransactionReference;
-    protected $requeryCount = 0;
+     //Api keys
+     protected $publicKey;
+     protected $secretKey;
+     protected $txref;
+     protected $integrityHash;
+     protected $payButtonText = 'Make Payment';
+     protected $redirectUrl;
+     protected $meta = array();
+     protected $env;
+     protected $transactionPrefix;
+    // public $logger;
+     protected $handler;
+     protected $stagingUrl = 'https://ravesandboxapi.flutterwave.com';
+     protected $liveUrl = 'https://api.ravepay.co';
+     protected $baseUrl;
+     protected $transactionData;
+     protected $overrideTransactionReference;
+     protected $requeryCount = 0;
+ 
+     //Payment information
+     protected $account;
+     protected $accountno;
+     protected $key;
+     protected $pin;
+     protected $json_options;
+     protected $post_data;
+     protected $options;
+     protected $card_no;
+     protected $cvv;
+     protected $expiry_month;
+     protected $expiry_year;
+     protected $amount;
+     protected $paymentMethod = 'both';
+     protected $customDescription;
+     protected $customLogo;
+     protected $customTitle;
+     protected $country;
+     protected $currency;
+     protected $customerEmail;
+     protected $customerFirstname;
+     protected $customerLastname;
+     protected $customerPhone;
+ 
+     //EndPoints 
+     protected $end_point ;
+     protected $authModelUsed;
+     protected $flwRef;
+     protected $txRef;
     
     /**
      * Construct
