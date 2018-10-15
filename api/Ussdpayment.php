@@ -12,9 +12,8 @@ require('../lib/raveEventHandlerInterface.php');
 use Flutterwave\Rave;
 use Flutterwave\Rave\EventHandlerInterface;
 
-GLOBAL $postData;
-$postData =$_POST;
 if($_POST["submit"]){
+    $postData =$_POST;
     $publicKey = $postData['publicKey'];
     $secretKey = $postData['secretKey'];
     $env = $postData['env']; // Remember to change this to 'live' when you are going live
@@ -123,7 +122,6 @@ class myEventHandler implements EventHandlerInterface{
 }
 echo "<pre>";
 if($postData['payment_type'] == "ussd"){
-
     $post_data = array(
         "PBFPubKey"=> $_SESSION['publicKey'],
         "accountbank"=> $_SESSION['accountbank'],

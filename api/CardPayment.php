@@ -12,13 +12,12 @@ require('../lib/raveEventHandlerInterface.php');
 use Flutterwave\Rave;
 use Flutterwave\Rave\EventHandlerInterface;
 
-GLOBAL $postData;
-$postData =$_POST;
 if($_POST["submit"]){
+    $postData = $_POST;
     $publicKey = $postData['publicKey'];
     $secretKey = $postData['secretKey'];
     $env = $postData['env']; // Remember to change this to 'live' when you are going live
-    $amount =$postData['amount'];
+    $amount = $postData['amount'];
     $pin = $postData['pin'];
     $cardno = $postData['cardno'];
     $cvv =  $postData['cvv'];

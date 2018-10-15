@@ -12,14 +12,12 @@ require('../lib/raveEventHandlerInterface.php');
 use Flutterwave\Rave;
 use Flutterwave\Rave\EventHandlerInterface;
 
-GLOBAL $postData;
-$postData = $_POST;
-echo"Hello";
 if($_POST["submit"]){
+    $postData = $_POST;
     $publicKey = $postData['publicKey'];
     $secretKey = $postData['secretKey'];
     $env = $postData['env']; // Remember to change this to 'live' when you are going live
-    $accountbank =$postData['account_bank'];
+    $accountbank = $postData['account_bank'];
     $accountnumber = $postData['account_number'];
     $bizphone = $postData['biz_phone'];
     $bizname = $postData['biz_name'];
@@ -128,8 +126,6 @@ class myEventHandler implements EventHandlerInterface{
 }
 echo "<pre>";
 if($postData['payment_type'] === "subaccount"){
-    echo"Mate";
-echo $_SESSION['accountbank'];
     $post_data = array(
             "account_bank"=> $_SESSION['accountbank'],
             "account_number"=> $_SESSION['accountnumber'],

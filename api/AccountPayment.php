@@ -12,9 +12,9 @@ require('../lib/raveEventHandlerInterface.php');
 use Flutterwave\Rave;
 use Flutterwave\Rave\EventHandlerInterface;
 
-GLOBAL $postData;
-$postData =$_POST;
+
 if($_POST["submit"]){
+    $postData = $_POST;
     $publicKey = $postData['publicKey'];
     $secretKey = $postData['secretKey'];
     $env = $postData['env']; // Remember to change this to 'live' when you are going live
@@ -124,24 +124,6 @@ class myEventHandler implements EventHandlerInterface{
 }
 echo "<pre>";
 if($postData['payment_type'] === "account"){
-
-    // $post_data = array(
-    //     "PBFPubKey" => "FLWPUBK-7adb6177bd71dd43c2efa3f1229e3b7f-X",
-    //     "accountbank" => "044",// get the bank code from the bank list endpoint.
-    //     "accountnumber"=> "0690000031",
-    //     "currency" =>"NGN",
-    //     "payment_type"=>"account",
-    //     "country"=> "NG",
-    //     "amount"=> "10",
-    //     "email"=> "emereuwaonueze@gmail.com",
-    //     "passcode"=>"09101989",//customer Date of birth this is required for Zenith bank account payment.
-    //     "phonenumber"=> "0902620185",
-    //     "firstname"=> "temi",
-    //     "lastname"=> "desola",
-    //     "IP"=> "127.0.0.1",
-    //     "txRef"=> "MC-0292920", // merchant unique reference
-    //     "device_fingerprint"=>"69e6b7f0b72037aa8428b70fbe03986c"
-    // );
     $post_data = array(
         "PBFPubKey" => $_SESSION['publicKey'], 
         "accountbank" => $_SESSION['accountbank'], 
