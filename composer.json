@@ -1,0 +1,19 @@
+{
+    "name": "flutterwave/rave",
+    "description": "A simple SDK for integrating to Flutterwave's Rave payment gateway",
+    "type": "library",
+    "require": {
+        "monolog/monolog": "1.*",
+        "mashape/unirest-php": "^3.0"
+    },
+    "require-dev": {
+
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Olanipekun Femi",
+            "email": "iolufemi@ymail.com"
+        }
+    ]
+}
