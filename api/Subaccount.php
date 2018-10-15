@@ -27,8 +27,6 @@ if($_POST["submit"]){
     $split_value =  $postData['split_value'];
     $email = $postData['biz_email'];
     $payment_type = $postData['payment_type'];
-    echo "Hi there";
-    echo $accountbank;
    
     $_SESSION['publicKey'] = $publicKey;
     $_SESSION['secretKey'] = $secretKey;
