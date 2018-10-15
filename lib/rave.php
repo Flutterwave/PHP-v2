@@ -176,6 +176,75 @@ class Rave {
         $this->amount = $amount;
         return $this;
     }
+
+    /**
+     * Sets the transaction amount
+     * @param integer $amount Transaction amount
+     * @return object
+     * */
+    function setAccount($account){
+        $this->account = $account;
+        return $this;
+    }
+    /**
+     * Sets the transaction amount
+     * @param integer $amount Transaction amount
+     * @return object
+     * */
+    function setAccountNumber($accountno){
+        $this->accountno = $accountno;
+        return $this;
+    }
+
+    /**
+     * Sets the transaction transaction card number
+     * @param integer $card_no Transaction card number
+     * @return object
+     * */
+    function setCardNo($card_no){
+        $this->card_no = $card_no;
+        return $this;
+    }
+
+    /**
+     * Sets the transaction transaction CVV
+     * @param integer $CVV Transaction CVV
+     * @return object
+     * */
+    function setCVV($cvv){
+        $this->cvv = $cvv;
+        return $this;
+    }
+    /**
+     * Sets the transaction transaction expiry_month
+     * @param integer $expiry_month Transaction expiry_month
+     * @return object
+     * */
+    function setExpiryMonth($expiry_month){
+        $this->expiry_month= $expiry_month;
+        return $this;
+    }
+
+    /**
+     * Sets the transaction transaction expiry_year
+     * @param integer $expiry_year Transaction expiry_year
+     * @return object
+     * */
+    function setExpiryYear($expiry_year){
+        $this->expiry_year = $expiry_year;
+        return $this;
+    }
+    /**
+     * Sets the transaction transaction end point
+     * @param string $end_point Transaction expiry_year
+     * @return object
+     * */
+    function setEndPoint($end_point){
+        $this->end_point = $end_point;
+        return $this;
+    }
+
+    
     
     /**
      * gets the transaction amount
@@ -525,6 +594,199 @@ class Rave {
 
         return $json;
     }
+
+    
+    /**
+     * this is the getKey function that generates an encryption Key for you by passing your Secret Key as a parameter.
+     * @param string
+     * @return string
+     * */
+    
+    function getKey($seckey){
+        $hashedkey = md5($seckey);
+        $hashedkeylast12 = substr($hashedkey, -12);
+
+        $seckeyadjusted = str_replace("FLWSECK-", "", $seckey);
+        $seckeyadjustedfirst12 = substr($seckeyadjusted, 0, 12);
+
+        $encryptionkey = $seckeyadjustedfirst12.$hashedkeylast12;
+        return $encryptionkey;
+
+    }
+
+    /**
+     * this is the encrypt3Des function that generates an encryption Key for you by passing your transaction Data and Secret Key as a parameter.
+     * @param string
+     * @return string
+     * */
+
+    function encrypt3Des($data, $key)
+    {
+        $encData = openssl_encrypt($data, 'DES-EDE3', $key, OPENSSL_RAW_DATA);
+        return base64_encode($encData);
+    }
+    /**
+     * this is the encryption function that combines the getkey() and encryptDes().
+     * @param string
+     * @return string
+     * */
+
+    function encryption($options){
+         //encrypt and return the key using the secrekKey
+         $this->key = $this->getkey($this->secretKey);
+         //set the data to transactionData
+         $this->transactionData = $options;
+         //encode the data and the 
+         $this->integrityHash = $this->encrypt3Des( $this->transactionData,  $this->key);
+    }
+
+     /**
+     * makes a call to the api 
+     * @param array
+     * @return object
+     * */
+
+    function cURL($data){
+        $curl = curl_init();
+		curl_setopt_array($curl, array(
+		  CURLOPT_URL => $this->baseUrl.'/'.$this->end_point,
+		  CURLOPT_RETURNTRANSFER => true,
+		  CURLOPT_CUSTOMREQUEST => "POST",
+		  CURLOPT_POSTFIELDS => json_encode($data),
+
+		  CURLOPT_HTTPHEADER => [
+		    "content-type: application/json",
+		    "cache-control: no-cache"
+		  ],
+		));
+       
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        if($err){
+            // there was an error contacting the rave API
+           return $err;
+          }else{
+            return $response;
+          }
+     }
+     /**
+     * verify the transaction before giving value to your customers
+     *  @param string
+     *  @return object
+     * */
+    function verifyTransaction(){
+        if(isset($this->txRef)){
+            if($this->authModelUsed === "PIN"){
+                $this->end_point = "flwv3-pug/getpaidx/api/v2/verify";
+                $this->post_data =  array( 
+                    'txref' => $this->txRef,
+                    'SECKEY' => $this->secretKey
+                    );
+                 $result  = $this->cURL($this->post_data);
+                 $result = json_decode($result,true);
+                $this->handler->onSuccessful($result);
+
+            }elseif($this->authModelUsed === "VBVSECURECODE"){
+               return "You have not initiated a card charge";
+            }
+            
+        }
+    }
+
+
+     /**
+     * Validate the transaction to be charged
+     *  @param string
+     *  @return object
+     * */
+    function validateTransaction($otp){
+        if(isset($this->authModelUsed)){
+            if($this->authModelUsed === "PIN"){
+                $this->end_point = "flwv3-pug/getpaidx/api/validatecharge";
+                $this->post_data = array(
+                    'PBFPubKey' => $this->publicKey,
+                    'transaction_reference' => $this->flwRef,
+                    'otp' => $otp);
+                 $result  = $this->cURL($this->post_data);
+                 $result = json_decode($result, true);
+                 print_r($result);
+                 $this->verifyTransaction();
+
+            }elseif($this->authModelUsed === "VBVSECURECODE"){
+              //Validation for foreign cards
+            }
+            
+        }
+    }
+
+
+    /**
+     * Generates the final json to be used in configuring the payment call to the rave payment gateway
+     *  @param array
+     *  @return object
+     * */
+
+     function chargePayment($array){
+        $this->options = $array;
+        $this->json_options = json_encode($this->options);
+        
+        //encrypt the required options to pass to the server
+        $this->encryption($this->json_options);
+
+        $this->post_data = array(
+            'PBFPubKey' => $this->publicKey,
+            'client' => $this->integrityHash,
+            'alg' => '3DES-24');
+
+        $result  = $this->cURL($this->post_data);
+        $result = json_decode($result, true);
+
+       $this->suggestedAuth($result);
+       return $this;
+     } 
+     
+    /**
+         * Used to create sub account on the rave dashboard
+         *  @param array
+         *  @return object
+         * */
+     function subaccount($array){
+        $this->options = $array;
+        $result  = $this->cURL($this->options);
+        echo $result;
+        $result = json_decode($result, true);
+        print_r($result);
+     }
+/**
+     * Handle suggested_auth which re-initiates the charge
+     * @param array $result This should be the result from cURL
+     * @return object
+     * */
+     function suggestedAuth($result){
+           //check the value of the returned data for the suggested_auth response
+        if(isset($result["data"]["suggested_auth"])){
+            if($result["data"]["suggested_auth"] === "PIN"){
+                $this->options["suggested_auth"] = "PIN";
+                $this->chargePayment($this->options);
+            }elseif($result["data"]["suggested_auth"] === "NOAUTH_INTERNATIONAL"){
+                $this->options["suggested_auth"] = "NOAUTH_INTERNATIONAL";
+
+                //Update $this->options with the billing addres details
+                //$this->chargePayment($this->options) //uncomment this function when charging international cards
+            }
+        } else {
+            //When a response without the suggested auth is returned then a validationis required.
+            //Set the authModelUsed, flwRef,txRef that will be used in the validation
+            if(isset($result["data"]["authModelUsed"])){
+                $this->authModelUsed = $result["data"]["authModelUsed"];
+                $this->flwRef = $result["data"]["flwRef"];
+                $this->txRef = $result["data"]["txRef"];
+            }
+            print_r($result);
+            return $result;
+            
+        }
+     }
     
     /**
      * Handle canceled payments with this method
