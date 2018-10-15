@@ -57,6 +57,15 @@ $payment = new Rave($_SESSION['publicKey'], $_SESSION['secretKey'], $prefix, $_S
 
 class myEventHandler implements EventHandlerInterface{
     /**
+     * This is called when the a transaction is initialized
+     * You can perform operations like writing to the database
+     * @param object $initializationData This is the initial transaction data as passed
+     * */
+    function onInit($initializationData){
+
+    }
+
+    /**
      * This is called only when a transaction is successful
      * */
     function onSuccessful($transactionData){
