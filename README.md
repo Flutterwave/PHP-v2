@@ -197,13 +197,13 @@ to do is pass a function which calls the PHP SDK that is needed.
 		$payment_plan = ""; // this is only required for recurring payments.
 
 		$array_options = array(
-			'amount'=>$amount,
-		    'customer_email'=>$customer_email,
-		    'currency'=>$currency,
-	        'txref'=>$txref,
-		    'PBFPubKey'=>$PBFPubKey,
+            'amount'=>$amount,
+            'customer_email'=>$customer_email,
+            'currency'=>$currency,
+            'txref'=>$txref,
+            'PBFPubKey'=>$PBFPubKey,
             'redirect_url'=>$redirect_url,
-		    'payment_plan'=>$payment_plan
+            'payment_plan'=>$payment_plan
 		);
         //calls the Pay SDK and initiates a payment 
         $pay = new Pay();
