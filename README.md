@@ -193,7 +193,7 @@ to do is pass a function which calls the PHP SDK that is needed.
 		$secretKey = "****YOUR**SECRET**KEY****";
 		$env = "staging";
 		$PBFPubKey = "****YOUR**PUBLIC**KEY****"; // we are suppose to pull from a table in our db name eg: "api-key". dont paste ur keys like this. but for the sake of this test, we will be doing the paste. 
-		$redirect_url = "";//enter a ridirect url
+		$redirect_url = "";//enter a redirect url
 		$payment_plan = ""; // this is only required for recurring payments.
 
 		$array_options = array(
