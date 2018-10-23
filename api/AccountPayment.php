@@ -81,7 +81,7 @@ class Account{
     function accountCharge($publicKey, $secretKey, $env, $array){
         $payment = new Rave($publicKey, $secretKey, $env);
             //set the payment handler 
-            $payment->eventHandler(new payEventHandler)
+            $payment->eventHandler(new accountEventHandler)
             //set the endpoint for the api call
             ->setEndPoint("flwv3-pug/getpaidx/api/v2/hosted/pay");
             //returns the value from the results

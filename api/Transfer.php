@@ -81,7 +81,7 @@ class Transfer{
     function singleTransfer($publicKey, $secretKey, $env, $array){
         $payment = new Rave($publicKey, $secretKey, $env);
             //set the payment handler 
-            $payment->eventHandler(new payEventHandler)
+            $payment->eventHandler(new transferEventHandler)
             //set the endpoint for the api call
             ->setEndPoint("v2/gpx/transfers/create");
             //returns the value from the results
