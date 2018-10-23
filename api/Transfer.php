@@ -10,9 +10,10 @@ require_once('raveEventHandlerInterface.php');
 use Flutterwave\Rave;
 use Flutterwave\EventHandlerInterface;
 
-class subaccountEventHandler implements EventHandlerInterface{
+class transferEventHandler implements EventHandlerInterface{
     /**
-     * This is called only when a transaction is successful
+     * This is called only when a transaction is successful 
+     * @param array
      * */
     function onSuccessful($transactionData){
         // Get the transaction from your DB using the transaction reference (txref)
@@ -26,8 +27,8 @@ class subaccountEventHandler implements EventHandlerInterface{
         // Update the transaction to note that you have given value for the transaction
         // You can also redirect to your success page from here
         if($transactionData["data"]["chargecode"] === '00' || $transactionData["data"]["chargecode"] === '0'){
-          echo "Transaction Completed";
-      }else{
+            echo "Transaction Completed";
+        }else{
           $this->onFailure($transactionData);
       }
     }
@@ -76,17 +77,16 @@ class subaccountEventHandler implements EventHandlerInterface{
     }
 }
 
-class Subaccount {
-    function subaccount($publicKey, $secretKey, $env, $array){
+class Transfer{
+    function singleTransfer($publicKey, $secretKey, $env, $array){
         $payment = new Rave($publicKey, $secretKey, $env);
             //set the payment handler 
             $payment->eventHandler(new payEventHandler)
             //set the endpoint for the api call
-            ->setEndPoint("flwv3-pug/getpaidx/api/v2/hosted/pay");
+            ->setEndPoint("v2/gpx/transfers/create");
             //returns the value from the results
-            return $payment->pay($array);
+            return $payment->transferSingle($array);
         }
-}
-
+    }
 
 ?>

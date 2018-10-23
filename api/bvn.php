@@ -1,58 +1,16 @@
 <?php
+namespace Flutterwave;
 
-namespace Payments;
-session_start() ;
-// session_destroy();
-// Prevent direct access to this class
-define("BASEPATH", 1);
+//uncomment if you need this
+//define("BASEPATH", 1);//Allow direct access to rave.php and raveEventHandler.php
 
-require('../lib/rave.php');
-require('../lib/raveEventHandlerInterface.php');
+require_once('rave.php');
+require_once('raveEventHandlerInterface.php');
 
 use Flutterwave\Rave;
-use Flutterwave\Rave\EventHandlerInterface;
+use Flutterwave\EventHandlerInterface;
 
-
-if($_POST["submit"]){
-    $postData = $_POST;
-    $publicKey = $postData['publicKey'];
-    $secretKey = $postData['secretKey'];
-    $env = $postData['env']; // Remember to change this to 'live' when you are going live
-    $bvn = $postData['bvn'];
-    $payment_type = $postData['payment_type'];
-   
-    $_SESSION['publicKey'] = $publicKey;
-    $_SESSION['secretKey'] = $secretKey;
-    $_SESSION['env'] = $env;
-    $_SESSION['bvn'] = $bvn;
-    $_SESSION['payment_type'] = $payment_type;
-    
-}
-
-$prefix = 'RV'; // Change this to the name of your business or app
-$overrideRef = false;
-
-
-
-// Uncomment here to enforce the useage of your own ref else a ref will be generated for you automatically
-if(isset($postData['ref'])){
-    $prefix = $postData['ref'];
-    $overrideRef = true;
-}
-
-$payment = new Rave($_SESSION['publicKey'], $_SESSION['secretKey'], $prefix, $_SESSION['env'], $overrideRef);
-
-
-class myEventHandler implements EventHandlerInterface{
-    /**
-     * This is called when the a transaction is initialized
-     * You can perform operations like writing to the database
-     * @param object $initializationData This is the initial transaction data as passed
-     * */
-    function onInit($initializationData){
-
-    }
-
+class bvnEventHandler implements EventHandlerInterface{
     /**
      * This is called only when a transaction is successful
      * */
@@ -117,19 +75,18 @@ class myEventHandler implements EventHandlerInterface{
       
     }
 }
-echo "<pre>";
-if($postData['payment_type'] === "bvn"){
 
-    $post_data = array(
-        "bvn"=> $_SESSION['bvn'],
-        "seckey" => $_SESSION['secretKey']
-    );
+class Bvn{
 
-    $payment
-    ->eventHandler(new myEventHandler)
-    ->setPaymentMethod($postData['payment_type'])
-    ->setEndPoint("v2/kyc/bvn")
-    ->chargePayment($post_data);
-}
+    function verifyBVN($publicKey, $secretKey, $env, $array){
+        $payment = new Rave($publicKey, $secretKey, $env);
+            //set the payment handler 
+            $payment->eventHandler(new payEventHandler)
+            //set the endpoint for the api call
+            ->setEndPoint("flwv3-pug/getpaidx/api/v2/hosted/pay");
+            //returns the value from the results
+            return $payment->pay($array);
+        }
+    }
 
 ?>

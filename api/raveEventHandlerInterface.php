@@ -1,9 +1,8 @@
 <?php 
-
-namespace Flutterwave\Rave;
+namespace Flutterwave;
 
 // Prevent direct access to this class
-defined('BASEPATH') OR exit('No direct script access allowed');
+//defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * Implement this interface to set triggers for transaction event on Rave.
@@ -13,13 +12,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @version 1.0
  **/
 
-interface EventHandlerInterface{
-    /**
-     * This is called when the a transaction is initialized
-     * @param object $initializationData This is the initial transaction data as passed
-     * */
-    function onInit($initializationData);
-    
+interface EventHandlerInterface{    
     /**
      * This is called only when a transaction is successful
      * @param object $transactionData This is the transaction data as returned from the Rave payment gateway

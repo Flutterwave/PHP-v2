@@ -1,64 +1,18 @@
 <?php
+namespace Flutterwave;
 
-namespace Payments;
-session_start() ;
-// session_destroy();
-// Prevent direct access to this class
-define("BASEPATH", 1);
+//uncomment if you need this
+//define("BASEPATH", 1);//Allow direct access to rave.php and raveEventHandler.php
 
-require('../lib/rave.php');
-require('../lib/raveEventHandlerInterface.php');
+require_once('rave.php');
+require_once('raveEventHandlerInterface.php');
 
 use Flutterwave\Rave;
-use Flutterwave\Rave\EventHandlerInterface;
-
-if($_POST["submit"]){
-    $postData = $_POST;
-    $publicKey = $postData['publicKey'];
-    $secretKey = $postData['secretKey'];
-    $env = $postData['env']; // Remember to change this to 'live' when you are going live
-    $amount = $postData['amount'];
-    $pin = $postData['pin'];
-    $cardno = $postData['cardno'];
-    $cvv =  $postData['cvv'];
-    $expirymonth = $postData['expirymonth'];
-    $expiryyear =$postData['expiryyear'];
-
-    $_SESSION['publicKey'] = $publicKey;
-    $_SESSION['secretKey'] = $secretKey;
-    $_SESSION['env'] = $env;
-    $_SESSION['cardno'] = $cardno;
-    $_SESSION['pin'] = $pin;
-    $_SESSION['amount'] = $amount;
-    $_SESSION['cvv'] = $cvv;
-    $_SESSION['expirymonth'] = $expirymonth;
-    $_SESSION['expiryyear'] = $expiryyear;
-}
-
-$prefix = 'RV'; // Change this to the name of your business or app
-$overrideRef = false;
+use Flutterwave\EventHandlerInterface;
 
 
 
-// Uncomment here to enforce the useage of your own ref else a ref will be generated for you automatically
-if(isset($postData['ref'])){
-    $prefix = $postData['ref'];
-    $overrideRef = true;
-}
-
-$payment = new Rave($_SESSION['publicKey'], $_SESSION['secretKey'], $prefix, $_SESSION['env'], $overrideRef);
-
-
-class myEventHandler implements EventHandlerInterface{
-    /**
-     * This is called when the a transaction is initialized
-     * You can perform operations like writing to the database
-     * @param object $initializationData This is the initial transaction data as passed
-     * */
-    function onInit($initializationData){
-
-    }
-
+class cardEventHandler implements EventHandlerInterface{
     /**
      * This is called only when a transaction is successful 
      * @param array
@@ -125,31 +79,16 @@ class myEventHandler implements EventHandlerInterface{
     }
 }
 
-echo "<pre>";
-if($postData['payment_type'] ===  "card"){
-        $post_data = array(
-            "PBFPubKey" => $_SESSION['publicKey'], 
-            "amount" => $_SESSION['amount'], 
-            "cardno" => $_SESSION['cardno'],
-            "cvv" => $_SESSION['cvv'],
-            "pin" => $_SESSION['pin'],
-            "email" => 'emereuwaonueze@gmail.com',
-            "txRef" => "MC-".time(),
-            "expirymonth"=> $_SESSION['expirymonth'],
-            "expiryyear" => $_SESSION['expiryyear']
-        );
-        $payment
-        ->eventHandler(new myEventHandler)
-        ->setAmount($postData['amount'])
-        ->setCardNo($postData['cardno'])
-        ->setCVV($postData['cvv']) 
-        ->setExpiryMonth($postData['expirymonth'])
-        ->setExpiryYear($postData['expiryyear'])
-        ->setPaymentMethod($postData['payment_type'])
-        ->setEndPoint("flwv3-pug/getpaidx/api/charge")
-        ->chargePayment($post_data)
-        ->validateTransaction("1234");
-
-}
+class Card {
+    function cardPayment($publicKey, $secretKey, $env, $array){
+        $payment = new Rave($publicKey, $secretKey, $env);
+            //set the payment handler 
+            $payment->eventHandler(new payEventHandler)
+            //set the endpoint for the api call
+            ->setEndPoint("flwv3-pug/getpaidx/api/v2/hosted/pay");
+            //returns the value from the results
+            return $payment->chargePayment($array);
+        }
+    }
 
 ?>

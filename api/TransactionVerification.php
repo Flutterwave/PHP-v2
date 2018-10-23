@@ -1,17 +1,14 @@
 <?php
+namespace Flutterwave;
 
-namespace TransactionVerification;
+//uncomment if you need this
+//define("BASEPATH", 1);//Allow direct access to rave.php and raveEventHandler.php
 
-session_start() ;
-// session_destroy();
-// Prevent direct access to this class
-define("BASEPATH", 1);
-
-include('lib/rave.php');
-include('lib/raveEventHandlerInterface.php');
+require_once('rave.php');
+require_once('raveEventHandlerInterface.php');
 
 use Flutterwave\Rave;
-use Flutterwave\Rave\EventHandlerInterface;
+use Flutterwave\EventHandlerInterface;
 
 
 

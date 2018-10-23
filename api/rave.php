@@ -1,67 +1,73 @@
 <?php 
-
 namespace Flutterwave;
 
 // Prevent direct access to this class
-// defined('BASEPATH') OR exit('No direct script access allowed'); // Uncomment this link if you need this
+//defined('BASEPATH') OR exit('No direct script access allowed'); // Uncomment this link if you need this
 
 // require __DIR__.'/../vendor/autoload.php'; // Uncomment this autoloader if you need it
+
+// use Monolog\Logger;
+// use Monolog\Handler\RotatingFileHandler;
+// use Unirest\Request;
+// use Unirest\Request\Body;
 
 /**
  * Flutterwave's Rave payment gateway PHP SDK
  * @author Olufemi Olanipekun <iolufemi@ymail.com>
+ * @author Emereuwaonu Eze <emereuwaonueze@gmail.com>
  * @version 1.0
  **/
 
 class Rave {
-     //Api keys
-     protected $publicKey;
-     protected $secretKey;
-     protected $txref;
-     protected $integrityHash;
-     protected $payButtonText = 'Make Payment';
-     protected $redirectUrl;
-     protected $meta = array();
-     protected $env;
-     protected $transactionPrefix;
-     protected $handler;
-     protected $stagingUrl = 'https://ravesandboxapi.flutterwave.com';
-     protected $liveUrl = 'https://api.ravepay.co';
-     protected $baseUrl;
-     protected $transactionData;
-     protected $overrideTransactionReference;
-     protected $requeryCount = 0;
- 
-     //Payment information
-     protected $account;
-     protected $accountno;
-     protected $key;
-     protected $pin;
-     protected $json_options;
-     protected $post_data;
-     protected $options;
-     protected $card_no;
-     protected $cvv;
-     protected $expiry_month;
-     protected $expiry_year;
-     protected $amount;
-     protected $paymentMethod = 'both';
-     protected $customDescription;
-     protected $customLogo;
-     protected $customTitle;
-     protected $country;
-     protected $currency;
-     protected $customerEmail;
-     protected $customerFirstname;
-     protected $customerLastname;
-     protected $customerPhone;
- 
-     //EndPoints 
-     protected $end_point ;
-     protected $authModelUsed;
-     protected $flwRef;
-     protected $txRef;
-    
+    //Api keys
+    protected $publicKey;
+    protected $secretKey;
+    protected $txref;
+    protected $integrityHash;
+    protected $payButtonText = 'Make Payment';
+    protected $redirectUrl;
+    protected $meta = array();
+    protected $env;
+    protected $transactionPrefix;
+   // public $logger;
+    protected $handler;
+    protected $stagingUrl = 'https://ravesandboxapi.flutterwave.com';
+    protected $liveUrl = 'https://api.ravepay.co';
+    protected $baseUrl;
+    protected $transactionData;
+    protected $overrideTransactionReference;
+    protected $requeryCount = 0;
+
+    //Payment information
+    protected $account;
+    protected $accountno;
+    protected $key;
+    protected $pin;
+    protected $json_options;
+    protected $post_data;
+    protected $options;
+    protected $card_no;
+    protected $cvv;
+    protected $expiry_month;
+    protected $expiry_year;
+    protected $amount;
+    protected $paymentMethod = 'both';
+    protected $customDescription;
+    protected $customLogo;
+    protected $customTitle;
+    protected $country;
+    protected $currency;
+    protected $customerEmail;
+    protected $customerFirstname;
+    protected $customerLastname;
+    protected $customerPhone;
+
+    //EndPoints 
+    protected $end_point ;
+    protected $authModelUsed;
+    protected $flwRef;
+    protected $txRef;
+
     /**
      * Construct
      * @param string $publicKey Your Rave publicKey. Sign up on https://rave.flutterwave.com to get one from your settings page
@@ -71,12 +77,13 @@ class Rave {
      * @param boolean $overrideRefWithPrefix Set this parameter to true to use your prefix as the transaction reference
      * @return object
      * */
-    function __construct($publicKey, $secretKey, $prefix, $env = 'staging', $overrideRefWithPrefix = false){
+    function __construct($publicKey, $secretKey, $prefix = 'RV', $env = 'staging', $overrideRefWithPrefix = false){
         $this->publicKey = $publicKey;
         $this->secretKey = $secretKey;
         $this->env = $env;
         $this->transactionPrefix = $overrideRefWithPrefix ? $prefix : $prefix.'_';
         $this->overrideTransactionReference = $overrideRefWithPrefix;
+
         $this->createReferenceNumber();
         
         if($this->env === 'staging'){
@@ -90,7 +97,7 @@ class Rave {
         return $this;
     }
     
-    /**
+     /**
      * Generates a checksum value for the information to be sent to the payment gateway
      * @return object
      * */
@@ -123,14 +130,13 @@ class Rave {
         foreach($options as $key => $value){
             $hashedPayload .= $value;
         }
-
         $completeHash = $hashedPayload.$this->secretKey;
         $hash = hash('sha256', $completeHash);
         
         $this->integrityHash = $hash;
         return $this;
     }
-    
+
     /**
      * Generates a transaction reference number for the transactions
      * @return object
@@ -513,17 +519,20 @@ class Rave {
         //check the status is success
         if ($response->body && $response->body->status === "success") {
             if($response->body && $response->body->data && $response->body->data->status === "successful"){
+               // $this->logger->notice('Requeryed a successful transaction....'.json_encode($response->body->data));
                 // Handle successful
                 if(isset($this->handler)){
                     $this->handler->onSuccessful($response->body->data);
                 }
             }elseif($response->body && $response->body->data && $response->body->data->status === "failed"){
                 // Handle Failure
+                //$this->logger->warn('Requeryed a failed transaction....'.json_encode($response->body->data));
                 if(isset($this->handler)){
                     $this->handler->onFailure($response->body->data);
                 }
             }else{
                 // Handled an undecisive transaction. Probably timed out.
+                //$this->logger->warn('Requeryed an undecisive transaction....'.json_encode($response->body->data));
                 // I will requery again here. Just incase we have some devs that cannot setup a queue for requery. I don't like this.
                 if($this->requeryCount > 4){
                     // Now you have to setup a queue by force. We couldn't get a status in 5 requeries.
@@ -531,11 +540,14 @@ class Rave {
                         $this->handler->onTimeout($this->txref, $response->body);
                     }
                 }else{
+                   // $this->logger->notice('delaying next requery for 3 seconds');
                     sleep(3);
+                   // $this->logger->notice('Now retrying requery...');
                     $this->requeryTransaction($this->txref);
                 }
             }
         }else{
+           // $this->logger->warn('Requery call returned error for transaction reference.....'.json_encode($response->body).'Transaction Reference: '. $this->txref);
             // Handle Requery Error
             if(isset($this->handler)){
                 $this->handler->onRequeryError($response->body);
@@ -569,11 +581,9 @@ class Rave {
         echo '</script>';
         echo '</body>';
         echo '</html>';
-
         return $json;
     }
 
-    
     /**
      * this is the getKey function that generates an encryption Key for you by passing your Secret Key as a parameter.
      * @param string
@@ -698,8 +708,38 @@ class Rave {
     }
 
 
+     /**
+     * Standard rave payment api using the inline js
+     *  @param array
+     *  @return object
+     * */
+
+     function pay($array){
+        return $this->cURL($array);
+     } 
+
+     /**
+     * St
+     *  @param array
+     *  @return object
+     * */
+
+    function bvn($array){
+        return $this->cURL($array);
+     } 
+
+
+     /**
+     * transfer payment api 
+     *  @param array
+     *  @return object
+     * */
+
+     function transferSingle($array){
+         return $this->cURL($array);
+     }
     /**
-     * Generates the final json to be used in configuring the payment call to the rave payment gateway
+     * Generates the final json to be used in configuring the payment call to the rave payment gateway api
      *  @param array
      *  @return object
      * */
@@ -720,7 +760,6 @@ class Rave {
         $result = json_decode($result, true);
 
        $this->suggestedAuth($result);
-       return $this;
      } 
      
     /**
@@ -731,9 +770,8 @@ class Rave {
      function subaccount($array){
         $this->options = $array;
         $result  = $this->cURL($this->options);
-        echo $result;
         $result = json_decode($result, true);
-        print_r($result);
+        return $result;
      }
 /**
      * Handle suggested_auth which re-initiates the charge
@@ -753,19 +791,16 @@ class Rave {
                 //$this->chargePayment($this->options) //uncomment this function when charging international cards
             }
         } else {
-            //When a response without the suggested auth is returned then a validationis required.
+            //When a response without the suggested auth is returned then a validation is required.
             //Set the authModelUsed, flwRef,txRef that will be used in the validation
             if(isset($result["data"]["authModelUsed"])){
                 $this->authModelUsed = $result["data"]["authModelUsed"];
                 $this->flwRef = $result["data"]["flwRef"];
                 $this->txRef = $result["data"]["txRef"];
             }
-            print_r($result);
-            return $result;
-            
+            return $result;   
         }
      }
-    
     /**
      * Handle canceled payments with this method
      * @param string $referenceNumber This should be the reference number of the transaction that was canceled
@@ -773,6 +808,7 @@ class Rave {
      * */
     function paymentCanceled($referenceNumber){
         $this->txref = $referenceNumber;
+       // $this->logger->notice('Payment was canceled by user..'.$this->txref);
         if(isset($this->handler)){
             $this->handler->onCancel($this->txref);
         }
@@ -783,3 +819,4 @@ class Rave {
 
 // silencio es dorado
 ?>
+

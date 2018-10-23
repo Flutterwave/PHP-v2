@@ -10,7 +10,7 @@ require_once('raveEventHandlerInterface.php');
 use Flutterwave\Rave;
 use Flutterwave\EventHandlerInterface;
 
-class subaccountEventHandler implements EventHandlerInterface{
+class ussdEventHandler implements EventHandlerInterface{
     /**
      * This is called only when a transaction is successful
      * */
@@ -76,8 +76,8 @@ class subaccountEventHandler implements EventHandlerInterface{
     }
 }
 
-class Subaccount {
-    function subaccount($publicKey, $secretKey, $env, $array){
+class Ussd{
+    function ussd($publicKey, $secretKey, $env, $array){
         $payment = new Rave($publicKey, $secretKey, $env);
             //set the payment handler 
             $payment->eventHandler(new payEventHandler)
@@ -87,6 +87,4 @@ class Subaccount {
             return $payment->pay($array);
         }
 }
-
-
 ?>
