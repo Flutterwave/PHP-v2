@@ -174,6 +174,60 @@ if($postData['amount']){
     }
 }
 ```
+### Sample implementation using a php function to fund a rave account
+
+In this implementation, all the functionality has been pre-written in the PHP SDK. All you have 
+to do is pass a function which calls the PHP SDK that is needed.
+
+```php
+    require_once('Flutterwave/api/Pay.php');
+    use Flutterwave\Pay;
+
+	//fund wallet
+	public function fundWallet($newamount)
+	{
+		$customer_email = "temi.adesina@gmail.com";//gets user email from db...but for the sake of this test....we are using my email
+		$amount = $newamount;  
+		$currency = "NGN";
+		$txref = "rave-".time(); // ensure you generate unique references per transaction.
+		$secretKey = "****YOUR**SECRET**KEY****";
+		$env = "staging";
+		$PBFPubKey = "****YOUR**PUBLIC**KEY****"; // we are suppose to pull from a table in our db name eg: "api-key". dont paste ur keys like this. but for the sake of this test, we will be doing the paste. 
+		$redirect_url = "";//enter a ridirect url
+		$payment_plan = ""; // this is only required for recurring payments.
+
+		$array_options = array(
+			'amount'=>$amount,
+		    'customer_email'=>$customer_email,
+		    'currency'=>$currency,
+	        'txref'=>$txref,
+		    'PBFPubKey'=>$PBFPubKey,
+            'redirect_url'=>$redirect_url,
+		    'payment_plan'=>$payment_plan
+		);
+        //calls the Pay SDK and initiates a payment 
+        $pay = new Pay();
+        //a result is returned from the pay call and this result is stored in a function
+        $result = $pay->pay($PBFPubKey, $secretKey,$env,$array_options); 
+        
+        //decodes the result from the API into a json format
+		$transaction = json_decode($result);
+
+		if(!$transaction->data && !$transaction->data->link){
+			// there was an error from the API
+			print_r('API returned error: ' . $transaction->message);
+		}
+		
+		// uncomment out this line if you want to redirect the user to the payment page
+		//print_r($transaction->data->message);
+		
+		
+		// redirect to page so User can pay
+		// uncomment this line to allow the user redirect to the payment page
+		header('Location: ' . $transaction->data->link);
+	}
+
+```
 
 You can also find the class documentation in the docs folder. There you will find documentation for the `Rave` class and the `EventHandlerInterface`.
 
@@ -182,5 +236,4 @@ Enjoy... :v:
 ## ToDo
 
 - Write Unit Test
-- Support Direct Charges
 - Support Tokenized payment
