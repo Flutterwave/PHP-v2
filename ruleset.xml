@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ruleset>
+    <file>./lib</file>
+    <arg name="colors"/>
+    <arg name="report" value="full"/>
+    <rule ref="PSR1"/>
+    <rule ref="PSR12"/>
+</ruleset>

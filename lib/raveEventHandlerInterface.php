@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 namespace Flutterwave;
 
 // Prevent direct access to this class
@@ -6,13 +7,14 @@ namespace Flutterwave;
 
 /**
  * Implement this interface to set triggers for transaction event on Rave.
- * An event can be triggered when a Rave initializes a transaction, When a 
+ * An event can be triggered when a Rave initializes a transaction, When a
  * transaction is successful, failed, requeried and when a requery fails.
  * @author Olufemi Olanipekun <iolufemi@ymail.com>
  * @version 1.0
  **/
 
-interface EventHandlerInterface{    
+interface EventHandlerInterface
+{
     /**
      * This is called only when a transaction is successful
      * @param object $transactionData This is the transaction data as returned from the Rave payment gateway
@@ -48,6 +50,5 @@ interface EventHandlerInterface{
      * @param string $transactionReference This is the transaction reference as returned from the Rave payment gateway
      * @data object $data This is the data returned from the requery call.
      * */
-    function onTimeout($transactionReference,$data);
+    function onTimeout($transactionReference, $data);
 }
-?>
