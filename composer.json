@@ -6,7 +6,12 @@
     "homepage": "https://github.com/Flutterwave/Flutterwave-Rave-PHP-SDK",
     "autoload": {
         "psr-4": {
-            "Flutterwave\\": "lib/Rave"
+            "Flutterwave\\": "lib"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Flutterwave\\": "tests"
         }
     },
     "require": {

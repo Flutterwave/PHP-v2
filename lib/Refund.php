@@ -86,4 +86,3 @@ class Refund {
             return $this->refund->refund($array);
         }
     }
-?>

@@ -106,4 +106,3 @@ class Subscription{
             return $this->subscription->fetchASubscription($email);
         }
     }
-?>

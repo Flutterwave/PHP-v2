@@ -85,4 +85,3 @@ class Ussd {
             return $this->ussd->pay($array);
         }
 }
-?>

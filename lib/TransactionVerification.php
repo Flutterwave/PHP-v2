@@ -84,4 +84,3 @@ class TransactionVerification {
             return $this->validate->verifyTransaction($txref);
         }
     }
-?>

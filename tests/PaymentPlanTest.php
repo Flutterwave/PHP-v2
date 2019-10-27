@@ -6,4 +6,4 @@ class PaymentPlanTest extends TestCase
 
 }
 
-?>
+

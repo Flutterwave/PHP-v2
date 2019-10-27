@@ -6,4 +6,4 @@ class SubscriptionTest extends TestCase
 
 }
 
-?>
+

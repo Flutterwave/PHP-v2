@@ -7,4 +7,4 @@ class CardPaymentTest extends TestCase
 
 }
 
-?>
+

@@ -923,5 +923,5 @@ class Rave {
 }
 
 // silencio es dorado
-?>
+
 

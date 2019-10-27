@@ -86,4 +86,3 @@ class PaymentPlan{
             return $this->plan->createPlan($array);
         }
     }
-?>

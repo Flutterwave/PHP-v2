@@ -41,4 +41,4 @@ class VirtualCardTest extends TestCase
 
 }
 
-?>
+

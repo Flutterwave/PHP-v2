@@ -267,4 +267,3 @@ print_r($result);
 // $result = $transfer->singleTransfer($array);
 // print_r($result);
 
-?>

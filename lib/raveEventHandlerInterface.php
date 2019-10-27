@@ -50,4 +50,3 @@ interface EventHandlerInterface{
      * */
     function onTimeout($transactionReference,$data);
 }
-?>

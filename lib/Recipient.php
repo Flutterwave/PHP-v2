@@ -86,4 +86,3 @@ class Recipient {
             return $this->recipient->beneficiary($array);
         }
     }
-?>
