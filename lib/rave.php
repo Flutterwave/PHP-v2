@@ -675,7 +675,7 @@ class Rave {
      function getURL($url){
         // make request to endpoint using unirest.
         $headers = array('Content-Type' => 'application/json');
-        $body = Body::json($data);
+        //$body = Body::json($data);
         $path = $this->baseUrl.'/'.$this->end_point;
         $response = Request::get($path.$url, $headers);
         return $response->raw_body;    // Unparsed body
@@ -704,38 +704,65 @@ class Rave {
      *  @param string
      *  @return object
      * */
-    function validateTransaction($otp){
-        if(isset($this->authModelUsed)){
-            if($this->authModelUsed === "PIN" ){
+    function validateTransaction($otp,$Ref){
+
+        //pin
                 $this->logger->notice('Validating otp...');
                 $this->setEndPoint("flwv3-pug/getpaidx/api/validatecharge");
                 $this->post_data = array(
                     'PBFPubKey' => $this->publicKey,
-                    'transaction_reference' => $this->flwRef,
+                    'transaction_reference' => $Ref,
                     'otp' => $otp);
                 $result  = $this->postURL($this->post_data);
                 return $result;
 
-            }elseif($this->authModelUsed === "VBVSECURECODE"){
-                $this->logger->notice('VBVSECURECODE...');
-              //Validation for foreign cards
-              return "Please validate using the authUrl";
-            }elseif($this->authModelUsed === "AUTH"){
-                $this->logger->notice('Validating otp...');
+    }
+
+    function validateTransaction2($otp, $Ref){
+        
+        $this->logger->notice('Validating otp...');
                 $this->setEndPoint("flwv3-pug/getpaidx/api/validate");
                 $this->post_data = array(
                     'PBFPubKey' => $this->publicKey,
-                    'transactionreference' => $this->flwRef,
+                    'transactionreference' => $Ref,
                     'otp' => $otp);
                 $result  = $this->postURL($this->post_data);
                 return $result;
 
-            }else{
-                $this->logger->error('You have not charged this transaction...');
-            }
-            
-        }
+
     }
+    
+                
+            
+        
+    
+
+      /**
+     * Get all Transactions
+     *  @return object
+     * */
+
+    function getAllTransactions($array){
+
+        $this->logger->notice('Getting all Transactions...');
+        $result = $this->postURL($array);
+        return $result;
+
+    }
+
+      /**
+     * Get all Settlements
+     *  @return object
+     * */
+
+    function getAllSettlements(){
+
+        $this->logger->notice('Getting all Subscription...');
+        $url = "?seckey=".$this->secretKey;
+        return $this->getURL($url);
+
+    }
+
      /**
      * Validating your bvn
      *  @param string
@@ -760,14 +787,26 @@ class Rave {
      } 
 
         /**
-     * Get all Subscription
+     * Get a Subscription
      * @param $id,$email
      *  @return object
      * */
 
-    function fetchASubscription($email){
+    function fetchASubscription($data){
         $this->logger->notice('Fetching a Subscription...');
-        $url = "?seckey=".$this->secretKey."&".$email;
+        $url = "?seckey=".$this->secretKey."&transaction_id=".$data['transaction_id'];
+        return $this->getURL($url);
+     }
+     
+        /**
+     * Get a Settlement
+     * @param $id,$email
+     *  @return object
+     * */
+
+    function fetchASettlement(){
+        $this->logger->notice('Fetching a Subscription...');
+        $url = "?seckey=".$this->secretKey;
         return $this->getURL($url);
      } 
 
@@ -843,6 +882,7 @@ class Rave {
          
      }
 
+
     /**
      * Generates the final json to be used in configuring the payment call to the rave payment gateway api
      *  @param array
@@ -868,12 +908,12 @@ class Rave {
         // the result returned requires validation
         $result = json_decode($result, true);
 
-        if(isset($result["data"]["authModelUsed"])){
+        if(isset($result['data']['authModelUsed'])){
             $this->logger->notice('Payment requires otp validation...');
-            $this->authModelUsed = $result["data"]["authModelUsed"];
-            $this->flwRef = $result["data"]["flwRef"];
-            $this->txRef = $result["data"]["txRef"];
-       }
+            $this->authModelUsed = $result['data']['authModelUsed'];
+            $this->flwRef = $result['data']['flwRef'];
+            $this->txRef = $result['data']['txRef'];
+        }
         //passes the result to the suggestedAuth function which re-initiates the charge 
         return $result;
      } 
@@ -919,6 +959,322 @@ class Rave {
         }
         return $this;
     }
+
+/**
+ * This is used to create virtual account for a merchant.
+ */
+    function createVirtualAccount($array){
+        $this->options = $array;
+        $this->logger->notice('creating virtual account..'); 
+        $result = $this->postURL($this->options);
+        return $result;
+    }
+
+     /**
+     * Create an Order with this method
+     * @param string $array
+     * @return object
+     * */
+
+    function createOrder($array){
+        $this->logger->notice('creating Ebill order for customer with email: '.$array['email']); 
+
+        if(empty($data['narration'])){
+            $array['narration'] = '';
+        }else if(empty($data['IP'])){
+            $array['IP'] = '10.30.205.3';
+
+        }else if(!isset($array['custom_business_name']) || empty($array['custom_business_name'])){
+            $array['custom_business_name'] = '';
+        }
+
+        $data = array(
+            // 'SECKEY' => $array['SECKEY'],
+            'SECKEY' => $this->secretKey,
+            'narration' => $array['narration'],
+            'numberofunits' => $array['numberofunits'],
+            'currency' => $array['currency'],
+            'amount' => $array['amount'],
+            'phonenumber' => $array['phonenumber'],
+            'email' => $array['email'],
+            'txRef' => $array['txRef'],
+            'IP' => $array['IP'],
+            'country' => $array['country'],
+            'custom_business_name' => $array['custom_business_name']
+        );
+        $result = $this->postURL($data);
+        return $result;
+    }
+
+     /**
+     * Update an Order with this method
+     * @param string $array
+     * @return object
+     * */
+    function updateOrder($array){
+        $this->logger->notice('updating Ebill order..');
+        
+        $data = array(
+            'SECKEY' => $this->secretKey,
+            'reference' => $array['flwRef'],
+            'currency' => 'NGN',
+            'amount' => $array['amount'],
+        );
+
+        $result = $this->postURL($data);
+        return $result;
+    }
+
+     /**
+     * pay bill or query bill information with this method
+     * @param string $array
+     * @return object
+     * */
+
+    function bill($array){
+        $this->logger->notice(' billing ...');
+
+        function startsWith($haystack, $needle)
+            {
+                 $length = strlen($needle);
+                 return (substr($haystack, 0, $length) === $needle);
+            }
+        $data = array();
+        if($array["service"] == 'fly_buy'){
+        $this->logger->notice('fly_buy bill...');
+            $data["service_payload"]["Country"] = $array["service_payload"]["Country"];
+            $data["service_payload"]["CustomerId"] = $array["service_payload"]["CustomerId"];
+            $data["service_payload"]["Reference"] = $array["service_payload"]["Reference"];
+            $data["service_payload"]["Amount"] = $array["service_payload"]["Amount"];
+            $data["service_payload"]["IsAirtime"] = $array["service_payload"]["IsAirtime"];
+            $data["service_payload"]["BillerName"] = $array["service_payload"]["BillerName"];
+      
+        }else if($array["service"] == 'fly_buy_bulk'){
+        $this->logger->notice('fly_buy_bulk bill...');
+
+            $data["service_payload"]["BatchReference"] = $array["service_payload"]["BatchReference"];
+            $data["service_payload"]["CallBackUrl"] = $array["service_payload"]["CallBackUrl"];
+            $data["service_payload"]["Requests"] = $array["service_payload"]["Requests"];//an array
+        }else if($array["service"] == 'fly_history'){
+        $this->logger->notice('fly_history bill...');
+            $data["service_payload"]["FromDate"] = $array["service_payload"]["FromDate"];
+            $data["service_payload"]["ToDate"] = $array["service_payload"]["ToDate"];
+            $data["service_payload"]["PageSize"] = $array["service_payload"]["PageSize"];
+            $data["service_payload"]["PageIndex"] = $array["service_payload"]["PageIndex"];
+            $data["service_payload"]["Reference"] = $array["service_payload"]["Reference"];
+        }else if($array["service"] == 'fly_recurring_cancel'){
+        $this->logger->notice('fly_recurring cancel bill...');
+
+            $data["service_payload"]["CustomerMobile"] = $array["service_payload"]["CustomerMobile"];
+            $data["service_payload"]["RecurringPayment"] = $array["service_payload"]["RecurringPayment"];//Id of the recurring payment to be cancelled.
+        }else if($array["service"] == 'fly_remita_create-order'){
+        $this->logger->notice('fly_remita_create-order...');
+
+            $data["service_payload"]["billercode"] = $array["service_payload"]["billercode"];
+            $data["service_payload"]["productcode"] = $array["service_payload"]["productcode"];
+            $data["service_payload"]["amount"] = $array["service_payload"]["amount"];
+            $data["service_payload"]["transactionreference"] = $array["service_payload"]["transactionreference"];
+            $data["service_payload"]["payer"] = $array["service_payload"]["payer"];
+            $data["service_payload"]["fields"] = $array["service_payload"]["fields"];
+        }else if($array["service"] == 'fly_remita_pay-order'){
+        $this->logger->notice('fly_remita_pay-order...');
+
+            $data["service_payload"]["orderreference"] = $array["service_payload"]["orderreference"];
+            $data["service_payload"]["paymentreference"] = $array["service_payload"]["paymentreference"];
+            $data["service_payload"]["amount"] = $array["service_payload"]["amount"];
+        }
+
+
+        
+            $data["secret_key"] = $this->secretKey;
+            $data["service"] = $array["service"];
+            $data["service_method"] = $array["service_method"];
+            $data["service_version"] = $array["service_version"];
+            $data["service_channel"] = "rave";
+    
+
+
+       
+            $result = $this->postUrl($data);
+        
+
+        return $result;
+    }
+
+    function bulkCharges($data){
+        $this->logger->notice('bulk charging...');
+        if(isset($data['title'])){
+        $url = "?seckey=".$this->secretKey."&&title=".$data['title'];
+
+        }elseif(isset($data['batch_id'])){
+            $url = "?SECKEY=".$this->secretKey."&batch_id=".$data['batch_id'];
+        }else{
+        $url = "?seckey=".$this->secretKey;
+
+        }
+        return $this->getURL($url);
+     }
+
+      /**
+     * List of all transfers with this method
+     * @param string $data
+     * @return object
+     * */
+
+     function listTransfers($data){
+        $this->logger->notice('Fetching list of transfers...');
+        if(isset($data['page'])){
+        $url = "?seckey=".$this->secretKey."&page=".$data['page'];
+
+        }else if(isset($data['page']) && isset($data['status'])){
+            $url = "?seckey=".$this->secretKey."&page".$data['page']."&status".$data['status'];
+        }else if(isset($data['status'])){
+        $url = "?seckey=".$this->secretKey."&status=".$data['status'];
+
+        }else{
+            $url = "?seckey=".$this->secretKey;
+
+        }
+        return $this->getURL($url);
+     }
+
+      /**
+     * Fetch a transfer and its details with this method
+     * @param string $data
+     * @return object
+     * */
+
+     function fetchATransfer($data){
+        $this->logger->notice('Fetching a transfer and its details...');
+        $url = "?seckey=".$this->secretKey;
+
+        return $this->getURL($url);
+     }
+
+      /**
+     * Check  a bulk transfer status with this method
+     * @param string $data
+     * @return object
+     * */
+
+     function bulkTransferStatus($data){
+
+        $this->logger->notice('Checking bulk transfer status...');
+        $url = "?seckey=".$this->secretKey."&batch_id=".$data['batch_id'];
+        return $this->getURL($url);
+     }
+
+      /**
+     * Check applicable fees with this method
+     * @param string $data
+     * @return object
+     * */
+
+     function applicableFees($data){
+
+        $this->logger->notice('Fetching applicable fees...');
+        $url = "?seckey=".$this->secretKey."&currency=".$data['currency']."&amount=".$data['amount'];
+        return $this->getURL($url);
+     }
+
+      /**
+     * Retrieve Transfer balance with this method
+     * @param string $array
+     * @return object
+     * */
+
+     function getTransferBalance($array){
+        $this->logger->notice('Fetching Transfer Balance...');
+        if(empty($array['currency'])){
+            $array['currency'] == 'NGN';
+        }
+        $data = array(
+            "seckey"=>$this->secretKey,
+            "currency" => $array['currency']
+        );
+        return $this->postURL($data);
+     } 
+
+      /**
+     * Verify an Account to Transfer to with this method
+     * @param string $array
+     * @return object
+     * */
+
+     function verifyAccount($array){
+
+        $this->logger->notice('Verifying transfer recipents account...');
+        if(empty($array['currency']) && empty($array['country'])){
+            $array['currency'] == '';
+            $array['country'] == '';
+        }
+
+        $data = array(
+            "recipientaccount"=> $array['recipientaccount'],
+            "destbankcode"=> $array['destbankcode'],
+            "PBFPubKey"=>$this->publicKey,
+            "currency" => $array['currency'],
+            "country" => $array['country']
+            
+        );
+        return $this->postURL($data);
+
+     }
+
+      /**
+     * Lists banks for Transfer with this method
+     * @return object
+     * */
+
+     function getBanksForTransfer(){
+        $this->logger->notice('Fetching banks available for Transfer...');
+
+          //get banks for transfer
+        $url = "?public_key=".$this->publickey;
+        $result = $this->getURL($url);
+
+     }
+
+      /**
+     * Captures funds this method
+     * @param string $array
+     * @return object
+     * */
+
+     function captureFunds($array){
+        $this->logger->notice('capturing funds for flwRef: '.$array['flwRef'].' ...');
+        $data = array(
+            "seckey"=> $this->secretkey,
+            "flwRef"=> $array['flwRef'],
+            "amount"=> $array['amount']
+            
+        );
+        return $this->postURL($data);
+
+     }
+
+      /**
+     * Refund or Void a fund with this method
+     * @param string $array
+     * @return object
+     * */
+
+     function refundOrVoid($array){
+        $this->logger->notice($array['action'].'ing a captured fund with the flwRef='.$array['flwRef']);
+
+        $data = array(
+            "ref"=> $array['flwRef'],
+            "action"=> $array['action'],
+            "SECKEY"=> $this->secretkey  
+        );
+        return $this->postURL($data);
+     }
+
+    
+
+    
+
+
     
 }
 
