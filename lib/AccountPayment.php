@@ -83,7 +83,7 @@ class Account {
     function __construct(){
         $this->payment = new Rave($_ENV['PUBLIC_KEY'], $_ENV['SECRET_KEY'], $_ENV['ENV']);
     }
-    function accountCharge($array){
+   function accountCharge($array){
             //set the payment handler 
             $this->payment->eventHandler(new accountEventHandler)
             //set the endpoint for the api call
@@ -98,15 +98,22 @@ class Account {
              * You can write out your function to execute when the verification is successful in the onSuccessful function
              ***/
         }
-    function validateTransaction($otp){
+    function validateTransaction($otp,$authModel,$Ref){
             //validate the charge
         $this->payment->eventHandler(new accountEventHandler);
-        return $this->payment->validateTransaction($otp);//Uncomment this line if you need it
+
+        if($authModel == 'PIN'){
+        return $this->payment->validateTransaction($otp, $Ref);//Uncomment this line if you need it
+        }
+        return $this->payment->validateTransaction2($otp, $Ref);//Uncomment this line if you need it
+
        }
+       
     function verifyTransaction($txRef){
            //verify the charge
         $this->payment->eventHandler(new accountEventHandler);
         return $this->payment->verifyTransaction($txRef, $_ENV['SECRET_KEY']);//Uncomment this line if you need it
        }
+    }
     }
 ?>
