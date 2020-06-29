@@ -20,6 +20,7 @@ Save your PUBLIC_KEY, SECRET_KEY, ENV in the .env file
 
 PUBLIC_KEY = "****YOUR**PUBLIC**KEY****"
 SECRET_KEY = "****YOUR**SECRET**KEY****"
+ENCRYPTION_KEY = "Encryption key"
 ENV = "staging or live"
 
 ```
