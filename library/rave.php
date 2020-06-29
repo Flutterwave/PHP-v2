@@ -36,7 +36,7 @@ class Rave {
    // public $logger;
     protected $handler;
     protected $stagingUrl = 'https://api.flutterwave.com';
-    protected $liveUrl = 'https://api.ravepay.co';
+    protected $liveUrl = 'https://api.flutterwave.com';
     protected $baseUrl;
     protected $transactionData;
     protected $overrideTransactionReference;
@@ -667,7 +667,7 @@ class Rave {
 
     function encryption($options){
          //encrypt and return the key using the secrekKey
-         $this->key = $this->getkey($this->secretKey);
+         $this->key = getenv('ENCRYPTION_KEY');
          //set the data to transactionData
          $this->transactionData = $options;
          //encode the data and the 
@@ -1004,7 +1004,7 @@ class Rave {
      *  @return object
      * */
 
-     function chargePayment($array){
+	     function chargePayment($array){
 
         //remove the type param from the payload
        
@@ -1036,10 +1036,24 @@ class Rave {
         //passes the result to the suggestedAuth function which re-initiates the charge 
         return $result;
 
+    }else if($this->type == "momo"){
+        $result  = $this->postURL($array);
+        $result = json_decode($result, true);
+
+        print_r($result['meta']);
+        //echo "momo payment";
+        if(isset($result['meta']['authorization'])){
+            header('Location:'.$result['meta']['authorization']['redirect']);
+        }
+
         }else{
             $result  = $this->postURL($array);
        // the result returned requires validation
         $result = json_decode($result, true);
+
+        if(isset($result['meta']['redirect'])){
+            header('Location:'.$result['meta']['redirect']);
+        }
 
         if(isset($result['data']['status'])){
             $this->logger->notice('Payment requires otp validation...');
